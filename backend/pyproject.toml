@@ -1,0 +1,14 @@
+[project]
+name = "wallet-tracker"
+version = "1.0.0"
+description = "Wallet Tracker - Personal Finance Management API"
+requires-python = ">=3.10"
+dependencies = [
+    "django>=6.0",
+    "djangorestframework>=3.14",
+    "djangorestframework-simplejwt>=5.3",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

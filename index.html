@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wallet Tracker - Control de Finanzas Personales</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              300: '#86efac',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="antialiased text-gray-800">
+  <div x-data="app" class="min-h-screen flex">
+    <!-- Mobile menu button -->
+    <div class="lg:hidden fixed top-4 left-4 z-50">
+      <button @click="mobileSidebarOpen = !mobileSidebarOpen" class="p-2 rounded-md bg-primary-600 text-white">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    
+    <!-- Sidebar (desktop) -->
+    <aside class="hidden lg:flex flex-col w-64 bg-white border-r border-gray-200">
+      <div class="p-5">
+        <div class="flex items-center space-x-3">
+          <i class="fas fa-wallet text-primary-600 text-2xl"></i>
+          <h1 class="font-bold text-xl text-gray-800">Wallet Tracker</h1>
+        </div>
+      </div>
+      
+      <nav class="flex-1 p-4 space-y-1">
+        <template x-for="(item, index) in navItems" :key="index">
+          <a 
+            @click="currentPage = item.id" 
+            class="flex items-center px-4 py-3 text-gray-600 rounded-lg transition-colors duration-200 hover:bg-primary-100 hover:text-primary-700"
+            :class="{'bg-primary-100 text-primary-700 font-medium': currentPage === item.id}"
+            href="javascript:void(0)">
+            <i :class="`fa-solid ${item.icon} w-5 h-5`"></i>
+            <span class="ml-3" x-text="item.name"></span>
+          </a>
+        </template>
+      </nav>
+      
+      <div class="p-4 border-t border-gray-200">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+            <i class="fas fa-user text-primary-600"></i>
+          </div>
+          <div>
+            <p class="font-medium text-sm">Usuario</p>
+            <p class="text-xs text-gray-500">usuario@ejemplo.com</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Mobile sidebar -->
+    <div 
+      x-show="mobileSidebarOpen" 
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-300"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      class="fixed inset-0 z-40 lg:hidden bg-black bg-opacity-50"
+      @click="mobileSidebarOpen = false">
+    </div>
+    
+    <div 
+      x-show="mobileSidebarOpen" 
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="-translate-x-full"
+      x-transition:enter-end="translate-x-0"
+      x-transition:leave="transition ease-in duration-300"
+      x-transition:leave-start="translate-x-0"
+      x-transition:leave-end="-translate-x-full"
+      class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform lg:hidden">
+      <div class="p-5 border-b">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-wallet text-primary-600 text-xl"></i>
+            <h1 class="font-bold text-lg text-gray-800">Wallet Tracker</h1>
+          </div>
+          <button @click="mobileSidebarOpen = false" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      
+      <nav class="p-4 space-y-1">
+        <template x-for="(item, index) in navItems" :key="index">
+          <a 
+            @click="currentPage = item.id; mobileSidebarOpen = false" 
+            class="flex items-center px-4 py-3 text-gray-600 rounded-lg transition-colors duration-200 hover:bg-primary-100 hover:text-primary-700"
+            :class="{'bg-primary-100 text-primary-700 font-medium': currentPage === item.id}"
+            href="javascript:void(0)">
+            <i :class="`fa-solid ${item.icon} w-5 h-5`"></i>
+            <span class="ml-3" x-text="item.name"></span>
+          </a>
+        </template>
+      </nav>
+      
+      <div class="p-4 mt-auto border-t border-gray-200">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+            <i class="fas fa-user text-primary-600"></i>
+          </div>
+          <div>
+            <p class="font-medium text-sm">Usuario</p>
+            <p class="text-xs text-gray-500">usuario@ejemplo.com</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main content -->
+    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
+      <div class="container mx-auto px-4 py-6 lg:px-8">
+        <!-- Dashboard Page -->
+        <div x-show="currentPage === 'dashboard'" x-transition>
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800">Panel Principal</h2>
+            <p class="text-gray-600 mt-1">Resumen de tus finanzas personales</p>
+          </div>
+          
+          <!-- Period Selector -->
+          <div class="flex space-x-2 mb-6">
+            <button @click="setPeriod('week')" class="px-4 py-2 rounded-md border text-sm" :class="period === 'week' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-300 hover:bg-gray-50'">Semana</button>
+            <button @click="setPeriod('month')" class="px-4 py-2 rounded-md border text-sm" :class="period === 'month' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-300 hover:bg-gray-50'">Mes</button>
+            <button @click="setPeriod('year')" class="px-4 py-2 rounded-md border text-sm" :class="period === 'year' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-300 hover:bg-gray-50'">Año</button>
+          </div>
+          
+          <!-- Stats cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Income Card -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <p class="text-sm font-medium text-gray-500">Ingresos Totales</p>
+                  <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                    $<span x-text="formatNumber(dashboardData.totalIncome)"></span>
+                  </h3>
+                </div>
+                <div class="p-2 rounded-full bg-green-100">
+                  <i class="fas fa-arrow-down fa-rotate-180 text-green-600"></i>
+                </div>
+              </div>
+              <div class="flex items-center text-sm">
+                <span :class="dashboardData.incomeTrend > 0 ? 'text-green-600' : 'text-red-600'">
+                  <i :class="dashboardData.incomeTrend > 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                  <span x-text="Math.abs(dashboardData.incomeTrend) + '%'"></span>
+                </span>
+                <span class="text-gray-500 ml-2">desde el período anterior</span>
+              </div>
+            </div>
+            
+            <!-- Expenses Card -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <p class="text-sm font-medium text-gray-500">Gastos Totales</p>
+                  <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                    $<span x-text="formatNumber(dashboardData.totalExpenses)"></span>
+                  </h3>
+                </div>
+                <div class="p-2 rounded-full bg-red-100">
+                  <i class="fas fa-arrow-up fa-rotate-180 text-red-600"></i>
+                </div>
+              </div>
+              <div class="flex items-center text-sm">
+                <span :class="dashboardData.expensesTrend < 0 ? 'text-green-600' : 'text-red-600'">
+                  <i :class="dashboardData.expensesTrend < 0 ? 'fas fa-arrow-down' : 'fas fa-arrow-up'"></i>
+                  <span x-text="Math.abs(dashboardData.expensesTrend) + '%'"></span>
+                </span>
+                <span class="text-gray-500 ml-2">desde el período anterior</span>
+              </div>
+            </div>
+            
+            <!-- Balance Card -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <p class="text-sm font-medium text-gray-500">Balance</p>
+                  <h3 class="text-2xl font-bold mt-1" :class="dashboardData.balance >= 0 ? 'text-green-600' : 'text-red-600'">
+                    $<span x-text="formatNumber(dashboardData.balance)"></span>
+                  </h3>
+                </div>
+                <div class="p-2 rounded-full" :class="dashboardData.balance >= 0 ? 'bg-green-100' : 'bg-red-100'">
+                  <i class="fas fa-wallet" :class="dashboardData.balance >= 0 ? 'text-green-600' : 'text-red-600'"></i>
+                </div>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                <div class="bg-primary-600 h-2.5 rounded-full" :style="`width: ${calculateBudgetPercentage()}%`"></div>
+              </div>
+              <div class="flex justify-between mt-2 text-xs text-gray-500">
+                <span>Gastado: <span x-text="calculateBudgetPercentage() + '%'"></span></span>
+                <span x-text="`Presupuesto: $${formatNumber(dashboardData.budgetTotal)}`"></span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Charts -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Expenses by Category Chart -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <h4 class="text-lg font-medium mb-4">Gastos por Categoría</h4>
+              <div class="h-64">
+                <canvas id="expensesByCategoryChart"></canvas>
+              </div>
+            </div>
+            
+            <!-- Income vs Expenses Chart -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <h4 class="text-lg font-medium mb-4">Ingresos vs Gastos</h4>
+              <div class="h-64">
+                <canvas id="incomeVsExpensesChart"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent Transactions -->
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="text-lg font-medium">Transacciones Recientes</h4>
+              <a href="javascript:void(0)" @click="currentPage = 'transactions'" class="text-primary-600 text-sm font-medium hover:text-primary-700">Ver todas</a>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-4 py-3">Fecha</th>
+                    <th scope="col" class="px-4 py-3">Descripción</th>
+                    <th scope="col" class="px-4 py-3">Categoría</th>
+                    <th scope="col" class="px-4 py-3">Monto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="(transaction, index) in dashboardData.recentTransactions" :key="index">
+                    <tr class="border-b hover:bg-gray-50">
+                      <td class="px-4 py-3" x-text="formatDate(transaction.date)"></td>
+                      <td class="px-4 py-3" x-text="transaction.description"></td>
+                      <td class="px-4 py-3">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium" 
+                              :class="getCategoryStyle(transaction.category)" 
+                              x-text="transaction.category"></span>
+                      </td>
+                      <td class="px-4 py-3 font-medium" :class="transaction.amount > 0 ? 'text-green-600' : 'text-red-600'" x-text="formatCurrency(transaction.amount)"></td>
+                    </tr>
+                  </template>
+                  <tr x-show="dashboardData.recentTransactions.length === 0">
+                    <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+                      No hay transacciones recientes
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Budget Progress -->
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="text-lg font-medium">Progreso del Presupuesto</h4>
+              <a href="javascript:void(0)" @click="currentPage = 'budgets'" class="text-primary-600 text-sm font-medium hover:text-primary-700">Ver todos</a>
+            </div>
+            
+            <div class="space-y-5">
+              <template x-for="(budget, index) in dashboardData.budgets.slice(0, 4)" :key="index">
+                <div>
+                  <div class="flex justify-between mb-1">
+                    <span class="text-sm font-medium" x-text="budget.category"></span>
+                    <span class="text-sm text-gray-600" x-text="`$${formatNumber(budget.spent)} / $${formatNumber(budget.amount)}`"></span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="h-2 rounded-full" 
+                         :class="getBudgetProgressColorClass(budget.spent, budget.amount)"
+                         :style="`width: ${Math.min(budget.spent / budget.amount * 100, 100)}%`"></div>
+                  </div>
+                </div>
+              </template>
+              <div x-show="dashboardData.budgets.length === 0" class="text-center text-gray-500 py-4">
+                No hay presupuestos configurados
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Transactions Page -->
+        <div x-show="currentPage === 'transactions'" x-transition>
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800">Transacciones</h2>
+            <p class="text-gray-600 mt-1">Gestiona todos tus ingresos y gastos</p>
+          </div>
+          
+          <!-- Add/Edit Transaction Form -->
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+            <h4 class="text-lg font-medium mb-4" x-text="editingTransaction ? 'Editar Transacción' : 'Agregar Transacción'"></h4>
+            <form @submit.prevent="saveTransaction">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label for="transaction-date" class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                  <input type="date" id="transaction-date" x-model="transactionForm.date" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                </div>
+                
+                <div>
+                  <label for="transaction-amount" class="block text-sm font-medium text-gray-700 mb-1">Monto</label>
+                  <div class="relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span class="text-gray-500">$</span>
+                    </div>
+                    <input type="number" id="transaction-amount" x-model="transactionForm.amount" required step="0.01" placeholder="0.00" class="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                  </div>
+                </div>
+                
+                <div>
+                  <label for="transaction-type" class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                  <select id="transaction-type" x-model="transactionForm.type" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <option value="income">Ingreso</option>
+                    <option value="expense">Gasto</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label for="transaction-category" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                  <select id="transaction-category" x-model="transactionForm.category" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <template x-if="transactionForm.type === 'income'">
+                      <template x-for="(category, index) in categories.income" :key="index">
+                        <option :value="category" x-text="category"></option>
+                      </template>
+                    </template>
+                    <template x-if="transactionForm.type === 'expense'">
+                      <template x-for="(category, index) in categories.expense" :key="index">
+                        <option :value="category" x-text="category"></option>
+                      </template>
+                    </template>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="mt-4">
+                <label for="transaction-description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <input type="text" id="transaction-description" x-model="transactionForm.description" required placeholder="Descripción de la transacción" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+              </div>
+              
+              <div class="mt-6 flex space-x-3">
+                <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                  <template x-if="editingTransaction">Actualizar</template>
+                  <template x-if="!editingTransaction">Agregar</template>
+                </button>
+                <button type="button" @click="resetTransactionForm" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Transactions Filter and Search -->
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label for="filter-date" class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                <select id="filter-date" x-model="transactionsFilter.dateRange" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                  <option value="all">Todos</option>
+                  <option value="today">Hoy</option>
+                  <option value="week">Esta semana</option>
+                  <option value="month">Este mes</option>
+                  <option value="year">Este año</option>
+                </select>
+              </div>
+              
+              <div>
+                <label for="filter-type" class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                <select id="filter-type" x-model="transactionsFilter.type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                  <option value="all">Todos</option>
+                  <option value="income">Ingresos</option>
+                  <option value="expense">Gastos</option>
+                </select>
+              </div>
+              
+              <div>
+                <label for="filter-search" class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+                <div class="relative rounded-md shadow-sm">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                  </div>
+                  <input type="text" id="filter-search" x-model="transactionsFilter.search" placeholder="Buscar transacciones..." class="w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Transactions Table -->
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-4 py-3">Fecha</th>
+                    <th scope="col" class="px-4 py-3">Descripción</th>
+                    <th scope="col" class="px-4 py-3">Categoría</th>
+                    <th scope="col" class="px-4 py-3">Monto</th>
+                    <th scope="col" class="px-4 py-3 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="(transaction, index) in filteredTransactions" :key="index">
+                    <tr class="border-b hover:bg-gray-50">
+                      <td class="px-4 py-3" x-text="formatDate(transaction.date)"></td>
+                      <td class="px-4 py-3" x-text="transaction.description"></td>
+                      <td class="px-4 py-3">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium" 
+                              :class="getCategoryStyle(transaction.category)" 
+                              x-text="transaction.category"></span>
+                      </td>
+                      <td class="px-4 py-3 font-medium" :class="transaction.amount > 0 ? 'text-green-600' : 'text-red-600'" x-text="formatCurrency(transaction.amount)"></td>
+                      <td class="px-4 py-3 text-right space-x-2">
+                        <button @click="editTransaction(transaction)" class="text-blue-600 hover:text-blue-800">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button @click="deleteTransaction(transaction.id)" class="text-red-600 hover:text-red-800">
+                          <i class="fas fa-trash-alt"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </template>
+                  <tr x-show="filteredTransactions.length === 0">
+                    <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                      No hay transacciones que coincidan con los filtros
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="py-3 px-4 bg-white border-t border-gray-200 flex items-center justify-between">
+              <span class="text-sm text-gray-700" x-text="`Mostrando ${filteredTransactions.length} transacciones`"></span>
+              
+              <nav class="inline-flex space-x-1 rounded-md shadow-sm">
+                <button class="px-3 py-1 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50">
+                  Anterior
+                </button>
+                <button class="px-3 py-1 border border-primary-500 text-sm font-medium rounded-md bg-primary-50 text-primary-700 hover:bg-primary-100">
+                  1
+                </button>
+                <button class="px-3 py-1 border border-gray-300 text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50">
+                  Siguiente
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Budgets Page -->
+        <div x-show="currentPage === 'budgets'" x-transition>
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800">Presupuestos</h2>
+            <p class="text-gray-600 mt-1">Define y administra tus límites de gastos</p>
+          </div>
+          
+          <!-- Add/Edit Budget Form -->
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+            <h4 class="text-lg font-medium mb-4" x-text="editingBudget ? 'Editar Presupuesto' : 'Crear Nuevo Presupuesto'"></h4>
+            <form @submit.prevent="saveBudget">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label for="budget-category" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                  <select id="budget-category" x-model="budgetForm.category" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <template x-for="(category, index) in categories.expense" :key="index">
+                      <option :value="category" x-text="category"></option>
+                    </template>
+                  </select>
+                </div>
+                
+                <div>
+                  <label for="budget-amount" class="block text-sm font-medium text-gray-700 mb-1">Monto Límite</label>
+                  <div class="relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span class="text-gray-500">$</span>
+                    </div>
+                    <input type="number" id="budget-amount" x-model="budgetForm.amount" required step="0.01" placeholder="0.00" class="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                  </div>
+                </div>
+                
+                <div>
+                  <label for="budget-period" class="block text-sm font-medium text-gray-700 mb-1">Período</label>
+                  <select id="budget-period" x-model="budgetForm.period" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <option value="monthly">Mensual</option>
+                    <option value="weekly">Semanal</option>
+                    <option value="annual">Anual</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="mt-4">
+                <label for="budget-description" class="block text-sm font-medium text-gray-700 mb-1">Descripción (opcional)</label>
+                <input type="text" id="budget-description" x-model="budgetForm.description" placeholder="Descripción del presupuesto" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+              </div>
+              
+              <div class="mt-6 flex space-x-3">
+                <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                  <template x-if="editingBudget">Actualizar</template>
+                  <template x-if="!editingBudget">Crear</template>
+                </button>
+                <button type="button" @click="resetBudgetForm" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Budgets Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <template x-for="(budget, index) in budgets" :key="index">
+              <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex justify-between mb-2">
+                  <h5 class="text-lg font-medium" x-text="budget.category"></h5>
+                  <div class="flex space-x-2">
+                    <button @click="editBudget(budget)" class="text-blue-600 hover:text-blue-800">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button @click="deleteBudget(budget.id)" class="text-red-600 hover:text-red-800">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <p class="text-sm text-gray-600" x-text="budget.description || 'Sin descripción'"></p>
+                <p class="text-sm text-gray-600 mt-1" x-text="getPeriodLabel(budget.period)"></p>
+                
+                <div class="mt-4">
+                  <div class="flex justify-between mb-1">
+                    <span class="text-sm font-medium text-gray-700" x-text="`$${formatNumber(budget.spent)} gastado`"></span>
+                    <span class="text-sm font-medium text-gray-700" x-text="`$${formatNumber(budget.amount)} presupuestado`"></span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="h-2.5 rounded-full"
+                         :class="getBudgetProgressColorClass(budget.spent, budget.amount)"
+                         :style="`width: ${Math.min(budget.spent / budget.amount * 100, 100)}%`"></div>
+                  </div>
+                  <div class="mt-2 flex justify-between items-center">
+                    <span class="text-sm" :class="budget.spent > budget.amount ? 'text-red-600 font-medium' : 'text-gray-600'">
+                      <template x-if="budget.spent <= budget.amount">
+                        <span x-text="`$${formatNumber(budget.amount - budget.spent)} restante`"></span>
+                      </template>
+                      <template x-if="budget.spent > budget.amount">
+                        <span x-text="`$${formatNumber(budget.spent - budget.amount)} excedido`"></span>
+                      </template>
+                    </span>
+                    <span class="text-xs font-medium" 
+                          :class="getBudgetPercentClass(budget.spent, budget.amount)" 
+                          x-text="`${Math.round(budget.spent / budget.amount * 100)}%`"></span>
+                  </div>
+                </div>
+              </div>
+            </template>
+            
+            <!-- Empty state -->
+            <div x-show="budgets.length === 0" class="bg-white rounded-xl shadow-sm p-8 border border-gray-100 col-span-full">
+              <div class="text-center">
+                <i class="fas fa-calculator text-gray-400 text-4xl mb-3"></i>
+                <h3 class="text-xl font-medium text-gray-800 mb-1">No hay presupuestos</h3>
+                <p class="text-gray-600">Crea tu primer presupuesto para comenzar a controlar tus finanzas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Categories & Rules Page -->
+        <div x-show="currentPage === 'categories'" x-transition>
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800">Categorías y Reglas</h2>
+            <p class="text-gray-600 mt-1">Gestiona tus categorías y crea reglas automáticas</p>
+          </div>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Categories Section -->
+            <div>
+              <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <h4 class="text-lg font-medium mb-4">Categorías</h4>
+                
+                <!-- Add Category Form -->
+                <form @submit.prevent="addCategory" class="mb-6">
+                  <div class="grid grid-cols-3 gap-3">
+                    <div class="col-span-1">
+                      <select x-model="categoryForm.type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="income">Ingreso</option>
+                        <option value="expense">Gasto</option>
+                      </select>
+                    </div>
+                    <div class="col-span-2 flex">
+                      <input type="text" x-model="categoryForm.name" required placeholder="Nueva categoría" class="w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                      <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-r-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+                
+                <!-- Income Categories -->
+                <div class="mb-6">
+                  <h5 class="text-sm font-medium text-gray-700 mb-2">Categorías de Ingresos</h5>
+                  <div class="flex flex-wrap gap-2">
+                    <template x-for="(category, index) in categories.income" :key="index">
+                      <div class="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full flex items-center">
+                        <span x-text="category"></span>
+                        <button @click="removeCategory('income', category)" class="ml-2 text-green-600 hover:text-green-800">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+                    </template>
+                    <div x-show="categories.income.length === 0" class="text-sm text-gray-500 italic">
+                      No hay categorías de ingresos
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Expense Categories -->
+                <div>
+                  <h5 class="text-sm font-medium text-gray-700 mb-2">Categorías de Gastos</h5>
+                  <div class="flex flex-wrap gap-2">
+                    <template x-for="(category, index) in categories.expense" :key="index">
+                      <div class="px-3 py-1 bg-red-100 text-red-800 text-sm rounded-full flex items-center">
+                        <span x-text="category"></span>
+                        <button @click="removeCategory('expense', category)" class="ml-2 text-red-600 hover:text-red-800">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+                    </template>
+                    <div x-show="categories.expense.length === 0" class="text-sm text-gray-500 italic">
+                      No hay categorías de gastos
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Rules Section -->
+            <div>
+              <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <h4 class="text-lg font-medium mb-4">Reglas Automáticas</h4>
+                <p class="text-sm text-gray-600 mb-4">Las reglas te permiten categorizar automáticamente tus transacciones según palabras clave.</p>
+                
+                <!-- Add Rule Form -->
+                <form @submit.prevent="addRule" class="mb-6">
+                  <div class="grid grid-cols-1 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Palabra clave</label>
+                      <input type="text" x-model="ruleForm.keyword" required placeholder="Ej: Netflix, Supermercado" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de transacción</label>
+                      <select x-model="ruleForm.type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="income">Ingreso</option>
+                        <option value="expense">Gasto</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Asignar a categoría</label>
+                      <select x-model="ruleForm.category" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <template x-if="ruleForm.type === 'income'">
+                          <template x-for="(category, index) in categories.income" :key="index">
+                            <option :value="category" x-text="category"></option>
+                          </template>
+                        </template>
+                        <template x-if="ruleForm.type === 'expense'">
+                          <template x-for="(category, index) in categories.expense" :key="index">
+                            <option :value="category" x-text="category"></option>
+                          </template>
+                        </template>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <button type="submit" class="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <template x-if="editingRule">Actualizar Regla</template>
+                        <template x-if="!editingRule">Agregar Regla</template>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+                
+                <!-- Rules List -->
+                <div class="space-y-3">
+                  <h5 class="text-sm font-medium text-gray-700">Reglas configuradas</h5>
+                  <template x-for="(rule, index) in rules" :key="index">
+                    <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <div class="flex justify-between items-start">
+                        <div>
+                          <p class="font-medium" x-text="rule.keyword"></p>
+                          <p class="text-sm text-gray-600">
+                            <span x-text="rule.type === 'income' ? 'Ingreso' : 'Gasto'"></span> → 
+                            <span class="font-medium" x-text="rule.category"></span>
+                          </p>
+                        </div>
+                        <div class="flex space-x-2">
+                          <button @click="editRule(rule)" class="text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <button @click="deleteRule(rule.id)" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash-alt"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                  <div x-show="rules.length === 0" class="text-center text-gray-500 py-3">
+                    No hay reglas configuradas
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Settings Page -->
+        <div x-show="currentPage === 'settings'" x-transition>
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800">Configuración</h2>
+            <p class="text-gray-600 mt-1">Personaliza la aplicación a tus preferencias</p>
+          </div>
+          
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+            <h4 class="text-lg font-medium mb-6">Ajustes Generales</h4>
+            
+            <div class="space-y-6">
+              <!-- Currency Setting -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <h5 class="text-sm font-medium text-gray-900">Moneda</h5>
+                  <p class="text-sm text-gray-600">Elige la moneda principal para tus finanzas</p>
+                </div>
+                <select x-model="settings.currency" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                  <option value="USD">USD - Dólar Estadounidense</option>
+                  <option value="NIO">NIO - Córdoba Nicaragüense</option>
+                </select>
+              </div>
+              
+              <!-- Start Day of Month -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <h5 class="text-sm font-medium text-gray-900">Día de inicio del mes</h5>
+                  <p class="text-sm text-gray-600">Define cuándo comienza tu mes financiero</p>
+                </div>
+                <select x-model="settings.startDayOfMonth" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                  <option value="1">1 - Principio de mes</option>
+                  <option value="15">15 - Mitad de mes</option>
+                  <option value="25">25 - Fin de mes</option>
+                </select>
+              </div>
+              
+              <!-- Notification Setting -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <h5 class="text-sm font-medium text-gray-900">Notificaciones</h5>
+                  <p class="text-sm text-gray-600">Recibe alertas sobre tu presupuesto</p>
+                </div>
+                <div class="flex items-center">
+                  <button 
+                    @click="settings.notifications = !settings.notifications"
+                    :class="settings.notifications ? 'bg-primary-600' : 'bg-gray-200'"
+                    class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    <span 
+                      :class="settings.notifications ? 'translate-x-5' : 'translate-x-0'"
+                      class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition ease-in-out duration-200">
+                    </span>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Theme Setting -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <h5 class="text-sm font-medium text-gray-900">Tema</h5>
+                  <p class="text-sm text-gray-600">Personaliza la apariencia de la aplicación</p>
+                </div>
+                <div class="flex space-x-3">
+                  <button @click="settings.theme = 'light'" class="w-8 h-8 rounded-full bg-white border-2" :class="settings.theme === 'light' ? 'border-primary-600' : 'border-gray-200'"></button>
+                  <button @click="settings.theme = 'dark'" class="w-8 h-8 rounded-full bg-gray-800 border-2" :class="settings.theme === 'dark' ? 'border-primary-600' : 'border-gray-800'"></button>
+                  <button @click="settings.theme = 'system'" class="w-8 h-8 rounded-full bg-gradient-to-r from-white to-gray-800 border-2" :class="settings.theme === 'system' ? 'border-primary-600' : 'border-gray-200'"></button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Save Settings -->
+            <div class="mt-8">
+              <button @click="saveSettings" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                Guardar Configuración
+              </button>
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+            <h4 class="text-lg font-medium mb-6">Datos</h4>
+            
+            <div class="space-y-6">
+              <!-- Export Data -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <h5 class="text-sm font-medium text-gray-900">Exportar Datos</h5>
+                  <p class="text-sm text-gray-600">Descarga tus datos en formato CSV</p>
+                </div>
+                <button class="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                  <i class="fas fa-download mr-2"></i> Exportar
+                </button>
+              </div>
+              
+              <!-- Import Data -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <h5 class="text-sm font-medium text-gray-900">Importar Datos</h5>
+                  <p class="text-sm text-gray-600">Sube un archivo CSV con tus datos</p>
+                </div>
+                <button class="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                  <i class="fas fa-upload mr-2"></i> Importar
+                </button>
+              </div>
+              
+              <!-- Clear Data -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <h5 class="text-sm font-medium text-red-600">Borrar Todos los Datos</h5>
+                  <p class="text-sm text-gray-600">Elimina permanentemente todos tus datos</p>
+                </div>
+                <button @click="clearAllData" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                  <i class="fas fa-trash-alt mr-2"></i> Borrar
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div class="text-center">
+              <h4 class="text-lg font-medium mb-2">Wallet Tracker</h4>
+              <p class="text-sm text-gray-600 mb-1">Versión 1.0.0</p>
+              <p class="text-sm text-gray-600">© 2025 Wallet Tracker. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Application Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
